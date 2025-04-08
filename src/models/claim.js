@@ -1,33 +1,56 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { User } from './user.js';
+import { EntitySchema } from 'typeorm';
 
-@Entity('claims')
-export class Claim {
-    @PrimaryGeneratedColumn()
-    id;
-
-    @ManyToOne(() => User)
-    user;
-
-    @Column()
-    insurance_id;
-
-    @Column('numeric')
-    amount;
-
-    @Column()
-    procedure_code;
-
-    @Column({
-        type: 'enum',
-        enum: ['PENDING', 'PROCESSING', 'APPROVED', 'REJECTED', 'FUNDED'],
-        default: 'PENDING'
-    })
-    status;
-
-    @CreateDateColumn()
-    created_at;
-
-    @UpdateDateColumn()
-    updated_at;
-}
+export const Claim = new EntitySchema({
+    name: "Claim",
+    tableName: "Claims",
+    columns: {
+        id: {
+            type: "uuid", 
+            primary: true,
+            generated: "uuid", 
+            default: () => `gen_random_uuid()` 
+        },
+        insurance_id: {
+            type: "uuid",
+            nullable: false
+        },
+        amount: {
+            type: "numeric",
+            nullable: false
+        },
+        procedure_code: {
+            type: "varchar",
+            nullable: false
+        },
+        status: {
+            type: "varchar",
+            nullable: false,
+            default: 'PENDING'
+        },
+        created_at: {
+            type: "timestamp",
+            createDate: true,
+            default: () => "CURRENT_TIMESTAMP"
+        },
+        updated_at: {
+            type: "timestamp",
+            updateDate: true,
+            default: () => "CURRENT_TIMESTAMP",
+            onUpdate: "CURRENT_TIMESTAMP"
+        }
+    },
+    relations: {
+        user: {
+            type: "many-to-one",
+            target: "User",
+            joinColumn: true,
+            onDelete: "CASCADE"
+        },
+        insurance: {
+            type: "many-to-one",      
+            target: "Insurance",     
+            joinColumn: { name: "insurance_id", referencedColumnName: "id" },
+            onDelete: "CASCADE"      
+        }
+    }
+});
