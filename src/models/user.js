@@ -1,29 +1,36 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { EntitySchema } from 'typeorm';
 
-@Entity('users')
-export class User {
-    @PrimaryGeneratedColumn()
-    id;
-
-    @Column()
-    name;
-
-    @Column({ unique: true })
-    email;
-
-    @Column()
-    password;
-
-    @Column({
-        type: 'enum',
-        enum: ['patient', 'employee', 'admin', 'doctor', 'hospitalStaff'],
-        default: 'patient'
-    })
-    role;
-
-    @CreateDateColumn()
-    created_at;
-
-    @UpdateDateColumn()
-    updated_at;
-}
+export const User = new EntitySchema({
+    name: "User",
+    tableName: "Users",
+    columns: {
+        id: {
+            type: "uuid", 
+            primary: true,
+            generated: "uuid", 
+            default: () => `gen_random_uuid()` 
+        },
+        name: {
+            type: "varchar",
+            nullable: false
+        },
+        email: {
+            type: "varchar",
+            unique: true,
+            nullable: false
+        },
+        password: {
+            type: "varchar",
+            nullable: false
+        },
+        created_at: {
+            type: "timestamp",
+            default: () => "CURRENT_TIMESTAMP"
+        },
+        updated_at: {
+            type: "timestamp",
+            default: () => "CURRENT_TIMESTAMP",
+            onUpdate: "CURRENT_TIMESTAMP"
+        }
+    }
+});

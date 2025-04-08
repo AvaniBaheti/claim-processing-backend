@@ -1,28 +1,51 @@
-import pkg from 'pg';
+import { DataSource } from 'typeorm';
+import { User } from '../../models/user.js';
+import { Payer } from '../../models/payer.js';
+import { Insurance } from '../../models/insurance.js';
+import { Claim } from '../../models/claim.js';
 import logger from "../logger.js";
 import dotenv from 'dotenv';
 
-dotenv.config();  
+dotenv.config();
 
-const { Pool } = pkg;
+let AppDataSource;
 
-const pool = new Pool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: parseInt(process.env.DB_PORT),
-    max: 70,  
-    idleTimeoutMillis: 30000, 
-    connectionTimeoutMillis: 2000,  
-    ssl: { rejectUnauthorized: false }
-});
+if (!AppDataSource) {
+    AppDataSource = new DataSource({
+        type: 'postgres',
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT),
+        username: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        synchronize: true, 
+        logging: true,
+        entities: [User, Payer, Insurance, Claim],
+        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+    });
+}
+
+export const initializeDatabase = async () => {
+    try {
+        if (!AppDataSource.isInitialized) {
+            await AppDataSource.initialize();
+            logger.info('Database connected successfully.');
+        } else {
+            logger.info('Database already initialized.');
+        }
+    } catch (error) {
+        logger.error('Database connection failed:', error.message);
+        process.exit(1); 
+    }
+};
 
 export const checkSqlDatabaseHealth = async () => {
     try {
-        const client = await pool.connect();
-        await client.query('SELECT 1'); 
-        client.release(); 
+        if (!AppDataSource.isInitialized) {
+            await AppDataSource.initialize();
+        }
+
+        const result = await AppDataSource.query('SELECT 1');
         logger.info('Database health check successful!');
         return { status: 'healthy', message: 'Database connection successful' };
     } catch (error) {
@@ -31,15 +54,4 @@ export const checkSqlDatabaseHealth = async () => {
     }
 };
 
-export const checkDatabaseConnection = async () => {
-    try {
-        const client = await pool.connect();
-        logger.info('Database connection successful!');
-        client.release(); 
-    } catch (error) {
-        console.error('Database connection failed:', error.message);
-        process.exit(1);
-    }
-};
-
-export default pool;
+export default AppDataSource;
