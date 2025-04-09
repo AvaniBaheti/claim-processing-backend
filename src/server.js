@@ -6,6 +6,7 @@ import { initializeDatabase } from "./config/db/postgreSql.js";
 import dotenv from 'dotenv';
 import AppDataSource from './config/db/postgreSql.js';
 import { StatusCodes } from 'http-status-codes';
+import sendSlackAlert from "./utils/slackAlerts.js";
 
 dotenv.config();
 
@@ -47,8 +48,11 @@ app.use((error, req, res, next) => {
       message: "Your token has been removed. Please log in again.",
     });
   }
+
++ sendSlackAlert(`❌ Unhandled error at ${req.method} ${req.originalUrl}\n${error.stack || error.message}`);
   res.status(error.status || StatusCodes.INTERNAL_SERVER_ERROR).json({ message: error.message });
 });
+
 
 async function startServer() {
   try {
@@ -68,6 +72,7 @@ async function startServer() {
     });
   } catch (err) {
     logger.error("Error starting server:", err);
+  + sendSlackAlert(`❌ Server failed to start:\n${err.stack || err.message}`);
     setTimeout(() => process.exit(1), 1000);
   }
 }

@@ -4,11 +4,13 @@ import { Insurance } from '../../models/insurance.js';
 import { Payer } from '../../models/payer.js';
 import { User } from '../../models/user.js';
 import logger from '../../config/logger.js';
+import sendSlackAlert from '../../utils/slackAlerts.js';
 
 export const createClaim = async (req, res) => {
     const { amount, procedure_code } = req.body;
 
     if (!amount || !procedure_code) {
+        await sendSlackAlert('Missing amount or procedure_code')
         return res.status(400).json({ message: 'Insurance ID, amount, and procedure code are required.' });
     }
 
@@ -17,6 +19,7 @@ export const createClaim = async (req, res) => {
         const user = await userRepository.findOne({ where: { id: req.user.id } });
 
         if (!user) {
+            await sendSlackAlert('User not found during claim creation')
             logger.error('User not found during claim creation', { userId: req.user.id });
             return res.status(404).json({ message: 'User not found. Please login first.' });
         }
@@ -25,11 +28,13 @@ export const createClaim = async (req, res) => {
         const insurance = await insuranceRepository.findOne({ where: {policy_number: procedure_code} });
 
         if (!insurance) {
+            await sendSlackAlert('Insurance not found during claim creation')
             logger.error('Insurance not found during claim creation', { procedure_code });
             return res.status(404).json({ message: 'Insurance not found.' });
         }
 
         if (amount > insurance.maximum_amount) {
+            await sendSlackAlert('Claim amount exceeds maximum amount allowed')
             logger.error('Claim amount exceeds maximum allowed', { amount, maximum_amount: insurance.maximum_amount });
             return res.status(400).json({ message: `Claim amount exceeds the maximum allowed amount of ${insurance.maximum_amount}.` });
         }
@@ -52,6 +57,7 @@ export const createClaim = async (req, res) => {
         });
 
     } catch (error) {
+        await sendSlackAlert(`Error in creating claim: ${error.message}`)
         logger.error('Error in creating claim:', { error: error.message });
         res.status(500).json({ message: 'Internal server error.' });
     }
@@ -71,6 +77,7 @@ export const getClaims = async (req, res) => {
 
         res.status(200).json({ claims });
     } catch (error) {
+        await sendSlackAlert(`Error in fetching claims: ${error.message}`)
         logger.error('Error in fetching claims:', { error: error.message });
         res.status(500).json({ message: 'Internal server error.' });
     }
@@ -99,6 +106,7 @@ export const getClaimById = async (req, res) => {
 
         res.status(200).json({ claim });
     } catch (error) {
+        await sendSlackAlert(`Error in fetching claim by Id: ${error.message}`)
         logger.error('Error in fetching claim by ID:', { error: error.message });
         res.status(500).json({ message: 'Internal server error.' });
     }
@@ -127,6 +135,7 @@ export const getClaimStatus = async (req, res) => {
 
         res.status(200).json({ status: claim.status });
     } catch (error) {
+        await sendSlackAlert(`Error in fetching claim status: ${error.message}`)
         logger.error('Error in fetching claim status:', { error: error.message });
         res.status(500).json({ message: 'Internal server error.' });
     }
@@ -177,6 +186,7 @@ export const updateClaimStatus = async (req, res) => {
         });
 
     } catch (error) {
+        await sendSlackAlert(`Error in updating claim: ${error.message}`)
         logger.error('Error in updating claim status:', { error: error.message });
         res.status(500).json({ message: 'Internal server error.' });
     }
