@@ -4,8 +4,8 @@ import { verifyToken } from '../../utils/middleware.js'
 
 const router = express.Router()
 
-router.get('/', getAllInsurances)
-router.get('/:insuranceId', getInsuranceById)
+router.get('/', verifyToken, getAllInsurances)
+router.get('/:insuranceId', verifyToken, getInsuranceById)
 router.post('/', verifyToken, createInsurance)
 
 export default router;
