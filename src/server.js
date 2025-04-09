@@ -2,7 +2,7 @@ import express from "express";
 import * as http from 'http';
 import logger from "./config/logger.js";
 import allV1Routes from '../src/routes/index.js';
-import { initializeDatabase, checkSqlDatabaseHealth } from "./config/db/postgreSql.js";
+import { initializeDatabase } from "./config/db/postgreSql.js";
 import dotenv from 'dotenv';
 import AppDataSource from './config/db/postgreSql.js';
 import { StatusCodes } from 'http-status-codes';

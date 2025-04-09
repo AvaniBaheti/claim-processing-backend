@@ -39,19 +39,5 @@ export const initializeDatabase = async () => {
     }
 };
 
-export const checkSqlDatabaseHealth = async () => {
-    try {
-        if (!AppDataSource.isInitialized) {
-            await AppDataSource.initialize();
-        }
-
-        const result = await AppDataSource.query('SELECT 1');
-        logger.info('Database health check successful!');
-        return { status: 'healthy', message: 'Database connection successful' };
-    } catch (error) {
-        logger.error('Database health check failed:', error.message);
-        return { status: 'unhealthy', message: `Database connection failed: ${error.message}` };
-    }
-};
 
 export default AppDataSource;
