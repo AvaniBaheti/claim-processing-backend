@@ -80,7 +80,11 @@ export const payerSignin = async (req, res) => {
     try {
         const payerRepository = AppDataSource.getRepository(Payer);
 
-        const payer = await payerRepository.findOne({ where: { email } });
+        const payer = await payerRepository
+        .createQueryBuilder("payer")
+        .addSelect("payer.password")
+        .where("payer.email = :email", { email })
+        .getOne();
 
         if (!payer) {
             logger.warn('Payer not found during signin attempt', { email });

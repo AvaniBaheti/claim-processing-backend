@@ -16,7 +16,8 @@ export const Payer = new EntitySchema({
         },
         password: {
             type: "varchar",
-            nullable: false
+            nullable: false,
+            select: false
         },
         address: {
             type: "text",

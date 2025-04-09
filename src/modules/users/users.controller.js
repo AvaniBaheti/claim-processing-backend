@@ -68,7 +68,11 @@ export const signin = async (req, res) => {
     try {
         const userRepository = AppDataSource.getRepository(User);
 
-        const user = await userRepository.findOne({ where: { email } });
+        const user = await userRepository
+        .createQueryBuilder("user")
+        .addSelect("user.password")
+        .where("user.email = :email", { email })
+        .getOne();
 
         if (!user) {
             logger.warn('User not found during signin attempt', { email });

@@ -21,7 +21,8 @@ export const User = new EntitySchema({
         },
         password: {
             type: "varchar",
-            nullable: false
+            nullable: false,
+            select: false
         },
         created_at: {
             type: "timestamp",
