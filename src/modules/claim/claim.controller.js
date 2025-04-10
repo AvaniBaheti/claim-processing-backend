@@ -72,7 +72,7 @@ export const getClaims = async (req, res) => {
                 { user: { id: req.user.id } },  
                 { insurance: { payer: { id: req.user.id } } }  
             ],
-            relations: ['insurance', 'insurance.payer']  
+            relations: ['user','insurance', 'insurance.payer']  
         });
 
         res.status(200).json({ claims });
