@@ -53,7 +53,7 @@ export const getInsuranceById = async (req, res) => {
 
         const insurance = await insuranceRepository.findOne({
             where: { id: insuranceId },
-            relations: ['payer', 'user']
+            relations: ['payer']
         });
 
         if (!insurance) {
@@ -74,7 +74,7 @@ export const getAllInsurances = async (req, res) => {
         const insuranceRepository = AppDataSource.getRepository(Insurance);
 
         const insurances = await insuranceRepository.find({
-            relations: ['payer', 'user']
+            relations: ['payer']
         });
 
         res.status(200).json({ insurances });
